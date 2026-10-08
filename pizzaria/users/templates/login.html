@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Pizzon{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-box">
+        <h1>Welcome Back 🍕</h1>
+        <p>Login to your account</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                <input type="text" name="username" id="id_username" 
+                       class="form-control" placeholder="Enter your username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                <input type="password" name="password" id="id_password" 
+                       class="form-control" placeholder="Enter your password" required>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+        </form>
+        
+        <p class="auth-link">
+            Don't have an account? <a href="{% url 'users:register' %}">Register</a>
+        </p>
+    </div>
+</div>
+
+<style>
+    .auth-box {
+        max-width: 500px;
+        margin: 3rem auto;
+        background: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .auth-box h1 {
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .auth-box p {
+        text-align: center;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: #F62440;
+        box-shadow: 0 0 0 3px rgba(246, 36, 64, 0.1);
+    }
+    
+    .btn-primary {
+        display: inline-block;
+        background: #F62440;
+        color: white;
+        padding: 14px 36px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 1rem;
+    }
+    
+    .btn-primary:hover {
+        background: #d41a33;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(246, 36, 64, 0.3);
+    }
+    
+    .auth-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+    
+    .auth-link a {
+        color: #F62440;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .auth-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

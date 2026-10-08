@@ -1,0 +1,651 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ item.name }} - Pizzon{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs">
+        <a href="{% url 'shop:home' %}">Home</a>
+        <span class="separator">›</span>
+        <a href="{% url 'shop:menu' %}">Menu</a>
+        <span class="separator">›</span>
+        <a href="{% url 'shop:menu' %}?category={{ item.category.slug }}">{{ item.category.name }}</a>
+        <span class="separator">›</span>
+        <span class="current">{{ item.name }}</span>
+    </nav>
+
+    <!-- Main Product -->
+    <div class="product-detail">
+        <div class="product-image">
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+            {% else %}
+                <img src="{{ MEDIA_URL }}fallback.png" alt="{{ item.name }}">
+            {% endif %}
+            {% if item.is_popular %}
+                <span class="product-badge">⭐ Popular</span>
+            {% endif %}
+            {% if not item.is_available %}
+                <span class="product-badge sold-out">Sold Out</span>
+            {% endif %}
+        </div>
+
+        <div class="product-info">
+            <div class="product-category">
+                <a href="{% url 'shop:menu' %}?category={{ item.category.slug }}">
+                    {{ item.category.name }}
+                </a>
+            </div>
+            <h1>{{ item.name }}</h1>
+            
+            <div class="product-rating">
+                <span class="stars">⭐⭐⭐⭐⭐</span>
+                <span class="rating-text">(4.5 based on 128 reviews)</span>
+            </div>
+
+            <div class="product-price">
+                <span class="price">{{ item.price }} da</span>
+                {% if item.is_popular %}
+                    <span class="popular-tag">🔥 Best Seller</span>
+                {% endif %}
+            </div>
+
+            <div class="product-description">
+                <h3>Description</h3>
+                <p>{{ item.description }}</p>
+            </div>
+
+            <div class="product-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Category:</span>
+                    <span class="meta-value">{{ item.category.name }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Availability:</span>
+                    <span class="meta-value {% if item.is_available %}in-stock{% else %}out-of-stock{% endif %}">
+                        {% if item.is_available %}In Stock{% else %}Out of Stock{% endif %}
+                    </span>
+                </div>
+                {% if item.created_at %}
+                <div class="meta-item">
+                    <span class="meta-label">Added:</span>
+                    <span class="meta-value">{{ item.created_at|date:"F d, Y" }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="product-actions">
+                <div class="quantity-selector">
+                    <label for="quantity">Quantity:</label>
+                    <div class="qty-control">
+                        <button class="qty-btn qty-minus" id="qty-minus">−</button>
+                        <input type="number" id="quantity" value="1" min="1" max="10">
+                        <button class="qty-btn qty-plus" id="qty-plus">+</button>
+                    </div>
+                </div>
+                <button class="btn-add-to-cart add-to-cart" data-item-id="{{ item.id }}">
+                    🛒 Add to Cart
+                </button>
+            </div>
+
+            <div class="product-features">
+                <div class="feature">
+                    <span class="feature-icon">🚚</span>
+                    <span class="feature-text">Free delivery on orders over 1000 da</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">🔄</span>
+                    <span class="feature-text">30-minute delivery guarantee</span>
+                </div>
+                <div class="feature">
+                    <span class="feature-icon">💳</span>
+                    <span class="feature-text">Cash or card payment available</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Items -->
+    {% if related_items %}
+    <section class="related-items">
+        <h2>You Might Also Like</h2>
+        <div class="related-grid">
+            {% for related in related_items %}
+            <div class="related-card">
+                <a href="{% url 'shop:menu_item_detail' related.slug %}">
+                    <div class="related-image">
+                        {% if related.image %}
+                            <img src="{{ related.image.url }}" alt="{{ related.name }}">
+                        {% else %}
+                            <img src="{{ MEDIA_URL }}fallback.png" alt="{{ related.name }}">
+                        {% endif %}
+                    </div>
+                    <h3>{{ related.name }}</h3>
+                    <p class="related-price">{{ related.price }} da</p>
+                </a>
+                <button class="btn-add-small add-to-cart" data-item-id="{{ related.id }}">
+                    Add to Cart
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<style>
+    /* ===== CONTAINER ===== */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 120px 20px 40px;
+    }
+
+    /* ===== BREADCRUMBS ===== */
+    .breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+        color: #888;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    .breadcrumbs a {
+        color: #F62440;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+    .breadcrumbs a:hover {
+        color: #d41a33;
+        text-decoration: underline;
+    }
+    .breadcrumbs .separator {
+        color: #ccc;
+    }
+    .breadcrumbs .current {
+        color: #333;
+        font-weight: 600;
+    }
+
+    /* ===== PRODUCT DETAIL ===== */
+    .product-detail {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 50px;
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+
+    /* ===== PRODUCT IMAGE ===== */
+    .product-image {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+        border-radius: 16px;
+        padding: 20px;
+        min-height: 400px;
+    }
+    .product-image img {
+        max-width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        filter: drop-shadow(0 10px 25px rgba(0,0,0,0.08));
+    }
+    .product-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: #FFB800;
+        color: #1a1a1a;
+        padding: 6px 16px;
+        border-radius: 25px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .product-badge.sold-out {
+        background: #dc3545;
+        color: white;
+    }
+
+    /* ===== PRODUCT INFO ===== */
+    .product-category {
+        margin-bottom: 8px;
+    }
+    .product-category a {
+        color: #F62440;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .product-category a:hover {
+        text-decoration: underline;
+    }
+    .product-info h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 12px;
+    }
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    .stars {
+        color: #FFB800;
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+    }
+    .rating-text {
+        color: #888;
+        font-size: 0.9rem;
+    }
+
+    .product-price {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding: 16px 0;
+        border-top: 2px solid #f0f0f0;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .product-price .price {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #F62440;
+    }
+    .popular-tag {
+        background: #28a745;
+        color: white;
+        padding: 4px 16px;
+        border-radius: 25px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .product-description {
+        margin-bottom: 24px;
+    }
+    .product-description h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 8px;
+    }
+    .product-description p {
+        color: #555;
+        line-height: 1.8;
+        font-size: 1rem;
+    }
+
+    .product-meta {
+        background: #f8f8f8;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+    }
+    .meta-item {
+        display: flex;
+        padding: 6px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .meta-item:last-child {
+        border-bottom: none;
+    }
+    .meta-label {
+        font-weight: 600;
+        color: #666;
+        min-width: 120px;
+    }
+    .meta-value {
+        color: #333;
+    }
+    .meta-value.in-stock {
+        color: #28a745;
+        font-weight: 600;
+    }
+    .meta-value.out-of-stock {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+    /* ===== PRODUCT ACTIONS ===== */
+    .product-actions {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+    }
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .quantity-selector label {
+        font-weight: 600;
+        color: #333;
+    }
+    .qty-control {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .qty-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        background: #f5f5f5;
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-weight: 700;
+        transition: background 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .qty-btn:hover {
+        background: #e0e0e0;
+    }
+    .qty-control input {
+        width: 50px;
+        height: 40px;
+        border: none;
+        border-left: 2px solid #e0e0e0;
+        border-right: 2px solid #e0e0e0;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 600;
+        background: white;
+    }
+    .qty-control input:focus {
+        outline: none;
+    }
+    /* Remove number input arrows */
+    .qty-control input::-webkit-inner-spin-button,
+    .qty-control input::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    .qty-control input[type=number] {
+        -moz-appearance: textfield;
+    }
+
+    .btn-add-to-cart {
+        background: #F62440;
+        color: white;
+        border: none;
+        padding: 14px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        min-width: 200px;
+    }
+    .btn-add-to-cart:hover {
+        background: #d41a33;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(246, 36, 64, 0.25);
+    }
+    .btn-add-to-cart.added {
+        background: #28a745;
+    }
+
+    /* ===== PRODUCT FEATURES ===== */
+    .product-features {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-top: 16px;
+        border-top: 2px solid #f0f0f0;
+    }
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    .feature-icon {
+        font-size: 1.2rem;
+    }
+
+    /* ===== RELATED ITEMS ===== */
+    .related-items {
+        margin-top: 60px;
+    }
+    .related-items h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 30px;
+    }
+    .related-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+    }
+    .related-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    .related-card a {
+        text-decoration: none;
+        color: inherit;
+    }
+    .related-image {
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+        background: #fafafa;
+        border-radius: 12px;
+        padding: 10px;
+    }
+    .related-image img {
+        max-width: 100%;
+        max-height: 130px;
+        object-fit: contain;
+    }
+    .related-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+    }
+    .related-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #F62440;
+        margin-bottom: 12px;
+    }
+    .btn-add-small {
+        background: #F62440;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .btn-add-small:hover {
+        background: #d41a33;
+    }
+    .btn-add-small.added {
+        background: #28a745;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+        .product-detail {
+            grid-template-columns: 1fr;
+            padding: 30px;
+        }
+        .product-image {
+            min-height: 300px;
+        }
+        .product-image img {
+            max-height: 300px;
+        }
+    }
+    @media (max-width: 768px) {
+        .container {
+            padding: 100px 16px 30px;
+        }
+        .product-detail {
+            padding: 20px;
+        }
+        .product-info h1 {
+            font-size: 2rem;
+        }
+        .product-price .price {
+            font-size: 1.8rem;
+        }
+        .product-actions {
+            flex-direction: column;
+        }
+        .btn-add-to-cart {
+            width: 100%;
+        }
+        .related-grid {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+    }
+    @media (max-width: 480px) {
+        .product-info h1 {
+            font-size: 1.6rem;
+        }
+        .product-price .price {
+            font-size: 1.4rem;
+        }
+        .product-rating {
+            flex-wrap: wrap;
+        }
+        .meta-item {
+            flex-direction: column;
+        }
+        .meta-label {
+            min-width: auto;
+        }
+    }
+</style>
+
+<script>
+    // Quantity controls
+    document.addEventListener('DOMContentLoaded', function() {
+        const minusBtn = document.getElementById('qty-minus');
+        const plusBtn = document.getElementById('qty-plus');
+        const qtyInput = document.getElementById('quantity');
+
+        if (minusBtn && plusBtn && qtyInput) {
+            minusBtn.addEventListener('click', function() {
+                let val = parseInt(qtyInput.value) || 1;
+                if (val > 1) {
+                    qtyInput.value = val - 1;
+                }
+            });
+
+            plusBtn.addEventListener('click', function() {
+                let val = parseInt(qtyInput.value) || 1;
+                if (val < 10) {
+                    qtyInput.value = val + 1;
+                }
+            });
+
+            qtyInput.addEventListener('change', function() {
+                let val = parseInt(this.value) || 1;
+                if (val < 1) this.value = 1;
+                if (val > 10) this.value = 10;
+            });
+        }
+
+        // Add to cart with quantity
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const itemId = this.dataset.itemId;
+                let quantity = 1;
+                
+                // Check if there's a quantity input on the page
+                const qtyInput = document.getElementById('quantity');
+                if (qtyInput) {
+                    quantity = parseInt(qtyInput.value) || 1;
+                }
+                
+                // Call the global addToCart function with quantity
+                if (typeof addToCart === 'function') {
+                    addToCart(itemId, quantity);
+                } else {
+                    // Fallback: use fetch directly
+                    fetch(`/add-to-cart/?item_id=${itemId}&quantity=${quantity}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Update cart badge
+                            document.querySelectorAll('.cart-badge').forEach(badge => {
+                                badge.textContent = data.cart_count;
+                                badge.style.display = data.cart_count > 0 ? 'block' : 'none';
+                            });
+                            
+                            // Button feedback
+                            this.textContent = '✅ Added!';
+                            this.classList.add('added');
+                            setTimeout(() => {
+                                this.textContent = '🛒 Add to Cart';
+                                this.classList.remove('added');
+                            }, 2000);
+                            
+                            if (typeof showToast === 'function') {
+                                showToast(data.message);
+                            } else {
+                                alert(data.message);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error adding item to cart');
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

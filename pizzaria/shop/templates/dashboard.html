@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Pizzon{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>📊 Admin Dashboard</h1>
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-content">
+                <h3>{{ total_orders }}</h3>
+                <p>Total Orders</p>
+                <small>{{ today_orders }} today</small>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <h3>da {{ total_revenue|floatformat:2 }}</h3>
+                <p>Total Revenue</p>
+                <small>da {{ today_revenue|floatformat:2 }} today</small>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-content">
+                <h3>{{ week_orders }}</h3>
+                <p>Orders (7 days)</p>
+                <small>Since {{ week_ago|date:"M d" }}</small>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <h3>da {{ week_revenue|floatformat:2 }}</h3>
+                <p>Revenue (7 days)</p>
+                <small>Since {{ week_ago|date:"M d" }}</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Breakdown -->
+    <div class="status-breakdown">
+        <h2>Order Status</h2>
+        <div class="status-grid">
+            {% for status in status_counts %}
+            <div class="status-item">
+                <span class="status-label status-{{ status.status }}">
+                    {{ status.get_status_display }}
+                </span>
+                <span class="status-count">{{ status.count }}</span>
+            </div>
+            {% empty %}
+            <p>No orders yet</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <!-- Recent Orders -->
+        <div class="recent-orders">
+            <h2>Recent Orders</h2>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in recent_orders %}
+                    <tr>
+                        <td><a href="{% url 'shop:admin_order_detail' order.order_number %}">{{ order.order_number }}</a></td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>da {{ order.total|floatformat:2 }}</td>
+                        <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        <td>{{ order.created_at|date:"M d, H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">No orders yet</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'shop:admin_orders' %}" class="btn-secondary">View All Orders</a>
+        </div>
+        
+        <!-- Popular Items -->
+        <div class="popular-items">
+            <h2>Popular Items</h2>
+            <div class="popular-list">
+                {% for name, count in popular_items %}
+                <div class="popular-item">
+                    <span class="item-name">{{ name }}</span>
+                    <span class="item-count">{{ count }} ordered</span>
+                </div>
+                {% empty %}
+                <p>No orders yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    
+    .stat-icon {
+        font-size: 2.5rem;
+        width: 60px;
+        height: 60px;
+        background: #f5f5f5;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .stat-content h3 {
+        font-size: 1.8rem;
+        margin: 0;
+        color: #1a1a1a;
+    }
+    
+    .stat-content p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .stat-content small {
+        color: #999;
+        font-size: 0.8rem;
+    }
+    
+    .status-breakdown {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    
+    .status-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #f5f5f5;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+    
+    .status-count {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .recent-orders,
+    .popular-items {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+    
+    .admin-table th {
+        text-align: left;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .admin-table td {
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .admin-table tr:hover {
+        background: #fafafa;
+    }
+    
+    .admin-table a {
+        color: #F62440;
+        text-decoration: none;
+    }
+    
+    .admin-table a:hover {
+        text-decoration: underline;
+    }
+    
+    .status-badge {
+        padding: 2px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d1ecf1; color: #0c5460; }
+    .status-preparing { background: #cce5ff; color: #004085; }
+    .status-ready { background: #d4edda; color: #155724; }
+    .status-delivered { background: #28a745; color: white; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    
+    .popular-list {
+        margin-top: 1rem;
+    }
+    
+    .popular-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .popular-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-count {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .btn-secondary {
+        display: inline-block;
+        background: #FFB800;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s;
+        margin-top: 1rem;
+    }
+    
+    .btn-secondary:hover {
+        background: #e6a500;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+{% endblock %}

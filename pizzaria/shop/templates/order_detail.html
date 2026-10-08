@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_number }} - Pizzon{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="order-header">
+        <div>
+            <h1>Order #{{ order.order_number }}</h1>
+            <p class="order-meta">Placed: {{ order.created_at|date:"F d, Y H:i" }}</p>
+        </div>
+        <div>
+            {% if user.is_staff %}
+                <a href="{% url 'shop:admin_orders' %}" class="btn-secondary">← Back to Admin Orders</a>
+            {% else %}
+                <a href="{% url 'users:order_history' %}" class="btn-secondary">← Back to My Orders</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="order-grid">
+        <!-- Order Details -->
+        <div class="order-info">
+            <div class="info-card">
+                <h3>📋 Order Information</h3>
+                <div class="info-row">
+                    <span class="label">Status:</span>
+                    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Payment:</span>
+                    <span>{{ order.get_payment_method_display }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Payment Status:</span>
+                    <span>{{ order.payment_status }}</span>
+                </div>
+            </div>
+            
+            <!-- Status Update Form - Only for Admins -->
+            {% if user.is_staff %}
+            <div class="info-card">
+                <h3>🔄 Update Status</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="status-form">
+                        <select name="status" required>
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+            
+            <!-- Customer Info -->
+            <div class="info-card">
+                <h3>👤 Customer Information</h3>
+                <div class="info-row">
+                    <span class="label">Name:</span>
+                    <span>{{ order.customer_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Email:</span>
+                    <span>{{ order.customer_email }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Phone:</span>
+                    <span>{{ order.customer_phone }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Address:</span>
+                    <span>{{ order.delivery_address }}</span>
+                </div>
+                {% if order.special_instructions %}
+                <div class="info-row">
+                    <span class="label">Instructions:</span>
+                    <span>{{ order.special_instructions }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Status History -->
+            {% if order.status_history %}
+            <div class="info-card">
+                <h3>📜 Status History</h3>
+                {% for entry in order.status_history %}
+                <div class="history-entry">
+                    <span class="old-status status-{{ entry.old_status }}">{{ entry.old_status }}</span>
+                    <span class="arrow">→</span>
+                    <span class="new-status status-{{ entry.new_status }}">{{ entry.new_status }}</span>
+                    <span class="history-time">{{ entry.timestamp|date:"M d, H:i" }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Items -->
+        <div class="order-items">
+            <div class="info-card">
+                <h3>🛒 Items</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order_items %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>da {{ item.price|floatformat:2 }}</td>
+                            <td>da {{ item.total|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Subtotal</strong></td>
+                            <td>da {{ order.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Delivery</strong></td>
+                            <td>da {{ order.delivery_fee|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Total</strong></td>
+                            <td class="total-amount">da {{ order.total|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem 0 1rem;
+    }
+    
+    .order-meta {
+        color: #666;
+        margin-top: 0.25rem;
+    }
+    
+    .order-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 2rem;
+        margin: 2rem 0;
+    }
+    
+    .info-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    
+    .info-card h3 {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f5f5f5;
+    }
+    
+    .info-row {
+        display: flex;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-row .label {
+        font-weight: 600;
+        color: #666;
+        min-width: 120px;
+    }
+    
+    .status-badge {
+        padding: 2px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d1ecf1; color: #0c5460; }
+    .status-preparing { background: #cce5ff; color: #004085; }
+    .status-ready { background: #d4edda; color: #155724; }
+    .status-delivered { background: #28a745; color: white; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+    
+    .status-form {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .status-form select {
+        flex: 1;
+        padding: 0.8rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+    
+    .status-form select:focus {
+        outline: none;
+        border-color: #F62440;
+    }
+    
+    .btn-primary {
+        background: #F62440;
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background: #d41a33;
+    }
+    
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .items-table th {
+        text-align: left;
+        padding: 0.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .items-table td {
+        padding: 0.5rem;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .items-table tfoot td {
+        border-bottom: none;
+        padding: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .text-right {
+        text-align: right;
+    }
+    
+    .total-amount {
+        color: #F62440;
+        font-size: 1.1rem;
+    }
+    
+    .history-entry {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .history-entry:last-child {
+        border-bottom: none;
+    }
+    
+    .history-time {
+        margin-left: auto;
+        color: #999;
+        font-size: 0.85rem;
+    }
+    
+    .old-status,
+    .new-status {
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .arrow {
+        color: #999;
+    }
+    
+    .btn-secondary {
+        display: inline-block;
+        background: #FFB800;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+    
+    .btn-secondary:hover {
+        background: #e6a500;
+    }
+    
+    @media (max-width: 768px) {
+        .order-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .status-form {
+            flex-direction: column;
+        }
+        
+        .info-row {
+            flex-direction: column;
+        }
+        
+        .info-row .label {
+            min-width: auto;
+        }
+    }
+</style>
+{% endblock %}

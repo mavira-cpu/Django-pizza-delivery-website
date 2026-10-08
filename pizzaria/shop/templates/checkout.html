@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Pizzon{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Checkout 🍕</h1>
+    
+    <div class="checkout-grid">
+        <!-- Order Form -->
+        <div class="checkout-form">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required 
+                           value="{{ user_info.name|default:'' }}" 
+                           placeholder="John Doe">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required 
+                               value="{{ user_info.email|default:'' }}" 
+                               placeholder="john@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone *</label>
+                        <input type="tel" id="phone" name="phone" required 
+                               value="{{ user_info.phone|default:'' }}"
+                               placeholder="+213 555 123456">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Delivery Address *</label>
+                    <textarea id="address" name="address" required rows="3" 
+                              placeholder="Street, City, Building, Apartment">{{ user_info.address|default:'' }}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="payment_method">Payment Method *</label>
+                    <select id="payment_method" name="payment_method" required>
+                        <option value="cash">Cash on Delivery</option>
+                        <option value="card">Card Payment</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="instructions">Special Instructions</label>
+                    <textarea id="instructions" name="instructions" rows="2" 
+                              placeholder="Any special requests or dietary requirements..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn-primary" style="width: 100%;">
+                    Place Order
+                </button>
+            </form>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h2>Order Summary</h2>
+            
+            <div class="summary-items">
+                {% for item in cart_items %}
+                <div class="summary-item">
+                    <span>{{ item.name }} × {{ item.quantity }}</span>
+                    <span>${{ item.price|floatformat:2 }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>da {{ subtotal|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Delivery</span>
+                <span>da{{ delivery_fee|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span>da {{ total|floatformat:2 }}</span>
+            </div>
+            
+            <div class="summary-actions">
+                <a href="{% url 'shop:cart' %}" class="btn-back">← Back to Cart</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .checkout-grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .checkout-form {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+        font-family: inherit;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #F62440;
+        box-shadow: 0 0 0 3px rgba(246, 36, 64, 0.1);
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .order-summary {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        align-self: start;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .order-summary h2 {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f5f5f5;
+    }
+    
+    .summary-items {
+        margin-bottom: 1.5rem;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 0.95rem;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+    }
+    
+    .summary-row.total {
+        border-top: 2px solid #f5f5f5;
+        margin-top: 0.75rem;
+        padding-top: 1rem;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    
+    .summary-actions {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid #f5f5f5;
+    }
+    
+    .btn-back {
+        color: #666;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+    
+    .btn-back:hover {
+        color: #F62440;
+    }
+    
+    .btn-primary {
+        display: inline-block;
+        background: #F62440;
+        color: white;
+        padding: 14px 36px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s;
+        font-size: 1rem;
+    }
+    
+    .btn-primary:hover {
+        background: #d41a33;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(246, 36, 64, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+        .checkout-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .order-summary {
+            position: static;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

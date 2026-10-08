@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Orders - Pizzon{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-header">
+        <h1>📋 Manage Orders</h1>
+        <a href="{% url 'shop:admin_dashboard' %}" class="btn-secondary">← Dashboard</a>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters">
+        <form method="get" class="filter-form">
+            <div class="filter-group">
+                <label>Status:</label>
+                <select name="status" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Search:</label>
+                <input type="text" name="search" value="{{ search|default:'' }}" placeholder="Order #, name, email...">
+                <button type="submit" class="btn-search">🔍</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Orders Table -->
+    <div class="orders-table-wrapper">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Phone</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><strong>{{ order.order_number }}</strong></td>
+                    <td>{{ order.customer_name }}</td>
+                    <td>{{ order.customer_phone }}</td>
+                    <td>${{ order.total|floatformat:2 }}</td>
+                    <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+                    <td>{{ order.get_payment_method_display }}</td>
+                    <td>{{ order.created_at|date:"M d, H:i" }}</td>
+                    <td>
+                        <a href="{% url 'shop:admin_order_detail' order.order_number %}" class="btn-view">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No orders found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2rem 0;
+    }
+    
+    .filters {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    
+    .filter-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: center;
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .filter-group label {
+        font-weight: 600;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        padding: 0.5rem 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+    }
+    
+    .filter-group select:focus,
+    .filter-group input:focus {
+        outline: none;
+        border-color: #F62440;
+    }
+    
+    .btn-search {
+        background: #F62440;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .btn-search:hover {
+        background: #d41a33;
+    }
+    
+    .orders-table-wrapper {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        overflow-x: auto;
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .admin-table th {
+        text-align: left;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 2px solid #f0f0f0;
+        color: #666;
+        font-weight: 600;
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+    
+    .admin-table td {
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid #f5f5f5;
+    }
+    
+    .admin-table tr:hover {
+        background: #fafafa;
+    }
+    
+    .btn-view {
+        display: inline-block;
+        background: #F62440;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+    
+    .btn-view:hover {
+        background: #d41a33;
+    }
+    
+    .text-center {
+        text-align: center;
+        padding: 3rem 0;
+        color: #666;
+    }
+    
+    .btn-secondary {
+        display: inline-block;
+        background: #FFB800;
+        color: white;
+        padding: 10px 24px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background 0.3s;
+    }
+    
+    .btn-secondary:hover {
+        background: #e6a500;
+    }
+</style>
+{% endblock %}

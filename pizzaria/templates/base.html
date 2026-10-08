@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pizzon - Fresh Pizza Delivery{% endblock %}</title>
+        <link rel="icon" type="image/png" href="{% static 'images/logo.png'%}">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        :root {
+            --bg-main: #FFFAF3;
+            --text-main: #191f11;
+            --header-bg: #FFFAF3;
+            --button-text: #F62440;
+            --accent-hover: #e09600;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== HEADER / NAV ===== */
+        .header {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: var(--header-bg);
+            padding: 12px 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+        }
+
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-img {
+            width: 75px;
+            height: auto;
+            display: block;
+            transition: transform 0.25s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            position: relative;
+            transition: color 0.25s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--button-text);
+        }
+
+        .cart-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-badge {
+            background: var(--button-text);
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .btn-login {
+            padding: 8px 22px;
+            border-radius: 40px;
+            border: 2px solid var(--button-text);
+            color: var(--button-text) !important;
+            transition: all 0.25s ease;
+        }
+
+        .btn-login:hover {
+            background-color: var(--button-text);
+            color: #ffffff !important;
+        }
+
+        .btn-register {
+            padding: 10px 24px;
+            border-radius: 40px;
+            background-color: var(--button-text);
+            color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(246, 36, 64, 0.2);
+            transition: all 0.25s ease;
+        }
+
+        .btn-register:hover {
+            background-color: var(--accent-hover);
+            box-shadow: 0 6px 20px rgba(224, 150, 0, 0.3);
+        }
+
+        /* ===== USER DROPDOWN ===== */
+        .dropdown {
+            position: relative;
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .user-dropdown .arrow {
+            font-size: 0.65rem;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown:hover .user-dropdown .arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #ffffff;
+            min-width: 200px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 0.6rem 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1010;
+        }
+
+        .dropdown:hover .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu li {
+            list-style: none;
+        }
+
+        .dropdown-menu li a {
+            display: block;
+            padding: 0.7rem 1.5rem;
+            color: #333;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .dropdown-menu li a:hover {
+            background: #fff8f8;
+            color: var(--button-text);
+        }
+
+        .dropdown-menu hr {
+            border: none;
+            border-top: 1px solid #f0f0f0;
+            margin: 0.4rem 0;
+        }
+
+        /* ===== MESSAGES / ALERTS ===== */
+        .messages {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            font-weight: 500;
+        }
+
+        .alert-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: inherit;
+            opacity: 0.7;
+        }
+
+        .alert-close:hover { opacity: 1; }
+
+        .alert-success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }
+        .alert-error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; }
+        .alert-warning { background: #fff8e1; color: #f57f17; border-left: 4px solid #f57f17; }
+        .alert-info { background: #e1f5fe; color: #0288d1; border-left: 4px solid #0288d1; }
+
+        /* ===== MAIN CONTENT ===== */
+        main {
+            flex: 1;
+        }
+
+        /* ===== FOOTER ===== */
+        .site-footer {
+            background-color: #181818;
+            color: #ffffff;
+            padding: 40px 20px 30px;
+            margin-top: 60px;
+            border-top: 4px solid var(--button-text);
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #bbb;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.25s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--button-text);
+        }
+
+        .footer-divider {
+            width: 100%;
+            max-width: 800px;
+            height: 1px;
+            background-color: #333333;
+            margin: 5px 0;
+        }
+
+        .footer-copy {
+            font-size: 0.9rem;
+            color: #888888;
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                flex-direction: column;
+                gap: 1.2rem;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <nav class="nav">
+            <a href="{% url 'shop:home' %}">
+                <img class="logo-img" src="{% static 'images/logo.png' %}"  alt="Pizzon Logo"></a>
+            <ul class="nav-links">
+                <li><a href="{% url 'shop:home' %}">Home</a></li>
+                <li><a href="{% url 'shop:menu' %}">Menu</a></li>
+                <li>
+                    <a href="{% url 'shop:cart' %}" class="cart-link">
+                        Cart
+                        <span class="cart-badge" id="cartBadge">{{ cart_count|default:0 }}</span>
+                    </a>
+                </li>
+                
+                {% if user.is_authenticated %}
+                    <li class="dropdown">
+                        <a href="#" class="nav-link user-dropdown">
+                            {{ user.username }}
+                            <span class="arrow">▼</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'users:profile' %}">Profile</a></li>
+                            <li><a href="{% url 'users:order_history' %}">My Orders</a></li>
+                            {% if user.is_staff %}
+                                <li><hr></li>
+                                <li><a href="{% url 'shop:admin_dashboard' %}">Admin Dashboard</a></li>
+                                <li><a href="{% url 'shop:admin_orders' %}">Manage Orders</a></li>
+                            {% endif %}
+                            <li><hr></li>
+                            <li><a href="{% url 'users:logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'users:login' %}" class="btn-login">Login</a></li>
+                    <li><a href="{% url 'users:register' %}" class="btn-register">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ===== MESSAGES ===== -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span>{{ message }}</span>
+            <button class="alert-close" onclick="this.parentElement.remove();">&times;</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-links">
+                <a href="{% url 'shop:home' %}">Home</a>
+                <a href="{% url 'shop:menu' %}">Menu</a>
+                <a href="{% url 'shop:cart' %}">Cart</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'users:profile' %}">Account</a>
+                {% else %}
+                    <a href="{% url 'users:login' %}">Login</a>
+                {% endif %}
+            </div>
+
+            <div class="footer-divider"></div>
+
+            <div class="footer-copy">
+                &copy; {% now "Y" %} Pizzon. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
